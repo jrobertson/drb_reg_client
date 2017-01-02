@@ -59,14 +59,14 @@ class DRbRegClient
   end
     
 
-  def get_keys(path)
+  def get_keys(key)
+    
     recordset = @reg.get_keys(key)
+    return unless recordset
 
-    if recordset then
-      recordset.to_doc(root: 'recordset').root.xml
-    else
-      nil
-    end    
+    doc = Rexle.new(recordset)    
+    doc.root.elements ? doc.root.elements.to_a : []
+   
   end
 
   def set_key(key, value)
@@ -84,13 +84,8 @@ class DRbRegClient
 
     return [] if r.empty?
 
-    doc = Rexle.new(r)
-    
-    if doc.root.elements then
-      doc.root.elements.to_a 
-    else
-      []
-    end
+    doc = Rexle.new(r)    
+    doc.root.elements ? doc.root.elements.to_a : []
   end
 
 end 
