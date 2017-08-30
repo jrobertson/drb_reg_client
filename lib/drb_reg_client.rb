@@ -68,6 +68,10 @@ class DRbRegClient
     doc.root.elements ? doc.root.elements.to_a : []
    
   end
+  
+  def import(s)
+    @reg.import s
+  end
 
   def set_key(key, value)
 
