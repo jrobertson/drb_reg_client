@@ -10,20 +10,41 @@ require 'rexle'
 class DRbRegClient
 
 
-  def initialize(host: 'localhost', port: '59500')
+  def initialize(host: nil, port: '59500', debug: false)
+    
+    @port, @debug  = port, debug
     DRb.start_service
 
     # attach to the DRb server via a URI given on the command line
-    @reg = DRbObject.new nil, "druby://#{host}:#{port}"
+    @reg = DRbObject.new nil, "druby://#{host}:#{port}" if host
   end
 
   def delete_key(path)
     @reg.delete_key path
   end
+  
+  def get(s)
+    
+    raw_uri, path = s[/(?<=reg:\/\/).*/].split('/',2)
+    host, port = raw_uri.split(':')        
+    port ||= @port
+    
+    if @debug
+      puts 'host:' + host.inspect
+      puts 'port:' + port.inspect 
+    end
+    
+    @reg = DRbObject.new nil, "druby://#{host}:#{port}"
+    get_key(path, auto_detect_type: true)
+    
+  end
 
   def get_key(key='', auto_detect_type: false)
-
-    r = @reg.get_key(key, auto_detect_type: auto_detect_type)     
+    
+    puts 'inside get_key' if @debug
+    r = @reg.get_key(key)     
+    
+    puts 'r: ' + r.inspect if @debug
 
     return unless r
 
@@ -72,6 +93,17 @@ class DRbRegClient
   def import(s)
     @reg.import s
   end
+  
+  def set(s, value)
+    
+    raw_uri, path = s[/(?<=reg:\/\/).*/].split('/',2)
+    host, port = raw_uri.split(':')        
+    port ||= @port
+       
+    @reg = DRbObject.new nil, "druby://#{host}:#{port}"
+    set_key(path, value)
+    
+  end  
 
   def set_key(key, value)
 
