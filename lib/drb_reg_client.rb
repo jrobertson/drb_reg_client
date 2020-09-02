@@ -25,7 +25,7 @@ class DRbRegClient
   
   def get(s)
     
-    raw_uri, path = s[/(?<=reg:\/\/).*/].split('/',2)
+    raw_uri, raw_path = s[/(?<=reg:\/\/).*/].split('/',2)
     host, port = raw_uri.split(':')        
     port ||= @port
     
@@ -35,7 +35,27 @@ class DRbRegClient
     end
     
     @reg = DRbObject.new nil, "druby://#{host}:#{port}"
-    get_key(path, auto_detect_type: true)
+    
+    path, raw_q = raw_path.split('?',2)
+    
+    r = get_key(path, auto_detect_type: true)
+    
+    if raw_q then
+      
+      q = raw_q[/(?<=q\=)[^$]+/]
+      
+      if q then
+        attr_val = r.attributes[q.to_sym]
+        Time.parse(attr_val) if q.to_sym == :last_modified
+      end
+      
+    else
+      
+      return r
+      
+    end
+    
+    
     
   end
 
